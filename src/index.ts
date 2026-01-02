@@ -1,18 +1,27 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
-
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
-	},
-} satisfies ExportedHandler<Env>;
+  async fetch(
+    request: Request,
+    env: unknown,
+    ctx: ExecutionContext
+  ): Promise<Response> {
+    const url = new URL(request.url);
+    const host = url.hostname;
+
+    // Handle only subdomains of devtoolsify.com
+    if (host.endsWith(".devtoolsify.com")) {
+      const subdomain = host.replace(".devtoolsify.com", "");
+
+      // Ignore main domain & www
+      if (subdomain && subdomain !== "www") {
+        // Rewrite ONLY the homepage
+        if (url.pathname === "/") {
+          url.pathname = `/${subdomain}`;
+          return fetch(url.toString(), request);
+        }
+      }
+    }
+
+    // Default pass-through
+    return fetch(request);
+  }
+};
