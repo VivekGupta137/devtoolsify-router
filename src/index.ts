@@ -7,20 +7,18 @@ export default {
     const url = new URL(request.url);
     const host = url.hostname;
 
-    // Handle only subdomains of devtoolsify.com
+    // Only handle devtoolsify.com subdomains
     if (host.endsWith(".devtoolsify.com")) {
       const subdomain = host.replace(".devtoolsify.com", "");
 
-      // Ignore main domain & www
       if (subdomain && subdomain !== "www") {
-        // Rewrite ONLY the homepage
-        if (url.pathname === "/") {
-          url.pathname = `/${subdomain}`;
-          return fetch(url.toString(), request);
-        }
+        // Map homepage "/" to subdomain path
+        const targetPath = url.pathname === "/" ? `/${subdomain}/` : url.pathname;
+        const targetUrl = `https://devtoolsify.com${targetPath}`;
+        return fetch(targetUrl, request);
       }
     }
-
+    
     // Default pass-through
     return fetch(request);
   }
